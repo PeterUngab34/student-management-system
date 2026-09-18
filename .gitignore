@@ -1,0 +1,19 @@
+# Build output
+target/
+
+# Local database settings (may contain a password) - copy db.properties.example instead
+db.properties
+
+# Embedded database files if run with -Dsms.home=.
+*.mv.db
+*.trace.db
+
+# IDE / OS
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+.DS_Store
+Thumbs.db

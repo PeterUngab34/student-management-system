@@ -1,0 +1,16 @@
+# -----------------------------------------------------------------------------
+# Student Management System - database settings
+#
+# Copy this file to "db.properties" (next to the jar / project root) or to
+# ~/.student-management-system/db.properties and fill in your MySQL details.
+#
+# Leave db.url empty (or delete the file) to use the embedded H2 database,
+# which needs no installation and is created automatically on first run.
+#
+# Environment variables SMS_DB_URL, SMS_DB_USER and SMS_DB_PASSWORD override
+# the values below.
+# -----------------------------------------------------------------------------
+
+db.url=jdbc:mysql://localhost:3306/student_management?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Manila&connectTimeout=5000
+db.user=sms_app
+db.password=change-me
