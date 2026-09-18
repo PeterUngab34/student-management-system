@@ -1,10 +1,10 @@
 package com.peterungab.sms.ui.views;
 
 import com.peterungab.sms.ui.MainFrame;
+import com.peterungab.sms.ui.Prompts;
 import com.peterungab.sms.ui.Ui;
 import com.peterungab.sms.util.CsvWriter;
 
-import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.io.File;
 import java.io.IOException;
@@ -23,14 +23,13 @@ final class Exports {
     }
 
     static Optional<Path> chooseCsvFile(MainFrame frame, String baseName) {
-        JFileChooser chooser = new JFileChooser(lastDirectory);
-        chooser.setDialogTitle("Export to CSV");
-        chooser.setFileFilter(new FileNameExtensionFilter("CSV files (*.csv)", "csv"));
-        chooser.setSelectedFile(new File(baseName + "-" + LocalDate.now() + ".csv"));
-        if (chooser.showSaveDialog(frame) != JFileChooser.APPROVE_OPTION) {
+        File suggested = new File(lastDirectory, baseName + "-" + LocalDate.now() + ".csv");
+        Optional<File> chosen = Prompts.chooseSaveFile(frame, "Export to CSV", suggested,
+                new FileNameExtensionFilter("CSV files (*.csv)", "csv"));
+        if (chosen.isEmpty()) {
             return Optional.empty();
         }
-        File file = chooser.getSelectedFile();
+        File file = chosen.get();
         lastDirectory = file.getParentFile();
         if (!file.getName().toLowerCase().endsWith(".csv")) {
             file = new File(file.getParentFile(), file.getName() + ".csv");

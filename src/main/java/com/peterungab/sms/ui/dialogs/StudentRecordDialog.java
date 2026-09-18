@@ -9,6 +9,7 @@ import com.peterungab.sms.model.Student;
 import com.peterungab.sms.model.StudentStatus;
 import com.peterungab.sms.service.AcademicRecord;
 import com.peterungab.sms.ui.Icons;
+import com.peterungab.sms.ui.Prompts;
 import com.peterungab.sms.ui.Theme;
 import com.peterungab.sms.ui.Ui;
 import com.peterungab.sms.ui.components.Card;
@@ -41,6 +42,8 @@ public final class StudentRecordDialog extends JDialog {
     private final int studentId;
     private final JPanel body = new JPanel(new MigLayout("fill, insets 24 26 20 26, gap 16 16",
             "[grow,fill][290!,fill]", "[][grow,fill][]"));
+    private JLabel gpaLabel;
+    private JLabel unitsLabel;
 
     public StudentRecordDialog(Window owner, AppContext ctx, int studentId) {
         super(owner, "Academic Record", ModalityType.APPLICATION_MODAL);
@@ -71,7 +74,7 @@ public final class StudentRecordDialog extends JDialog {
                 : "Only active students can be enrolled");
         enroll.addActionListener(e -> {
             EnrollDialog dialog = new EnrollDialog(this, ctx, s.id());
-            dialog.setVisible(true);
+            Prompts.showModal(dialog);
             if (dialog.result().isPresent()) {
                 build();
             }
@@ -102,19 +105,29 @@ public final class StudentRecordDialog extends JDialog {
                 + Student.yearLevelLabel(s.yearLevel()) + "  ·  " + s.status().label()), "wrap");
         info.add(Ui.muted(s.email() + (s.phone() == null ? "" : "  ·  " + s.phone()), -1));
 
+        gpaLabel = new JLabel(record.gpa().map(GradeScale::format).orElse("—"));
+        unitsLabel = new JLabel(String.valueOf(record.unitsEarned()));
         card.add(new Avatar(s.initials(), PillRenderer.studentStatusColor(s.status())));
         card.add(info, "growx");
-        card.add(metric(record.gpa().map(GradeScale::format).orElse("—"), "Cumulative GPA",
+        card.add(metric(gpaLabel, "Cumulative GPA",
                 record.gpa().map(g -> GradeScale.describe(g)).orElse("No grades yet")));
-        card.add(metric(String.valueOf(record.unitsEarned()), "Units earned",
-                record.enrollments().size() + " enrollment(s)"));
+        card.add(metric(unitsLabel, "Units earned", record.enrollments().size() + " enrollment(s)"));
         return card;
     }
 
-    private static JComponent metric(String value, String caption, String hint) {
+    /** The cumulative GPA as shown in the profile card ("—" when nothing is graded yet). */
+    public String cumulativeGpaText() {
+        return gpaLabel.getText();
+    }
+
+    /** The "Units earned" figure as shown in the profile card. */
+    public String unitsEarnedText() {
+        return unitsLabel.getText();
+    }
+
+    private static JComponent metric(JLabel v, String caption, String hint) {
         JPanel p = new JPanel(new MigLayout("insets 0 6 0 6, gap 0", "[grow,fill]", "[]0[]0[]"));
         p.setOpaque(false);
-        JLabel v = new JLabel(value);
         v.putClientProperty(FlatClientProperties.STYLE, "font: bold +14");
         JLabel c = new JLabel(caption);
         JLabel h = Ui.muted(hint, -2);

@@ -6,7 +6,7 @@ It runs against **MySQL** when one is configured, and falls back to an **embedde
 
 [![CI](https://github.com/PeterUngab34/student-management-system/actions/workflows/ci.yml/badge.svg)](https://github.com/PeterUngab34/student-management-system/actions/workflows/ci.yml)
 
-**⬇ [Download the latest release](https://github.com/PeterUngab34/student-management-system/releases/latest)**: a single runnable `.jar` (Java 17+). Run it with `java -jar student-management-system.jar`; sample data is created on first launch.
+**⬇ [Download the latest release](https://github.com/PeterUngab34/student-management-system/releases/latest)**: `StudentManagementSystem-windows-x64.zip` runs on Windows with **no Java installed** (unzip and double-click `Student Management System.exe`), and `student-management-system.jar` runs anywhere with Java 17+ (`java -jar student-management-system.jar`). Sample data is created on first launch.
 
 ![Students view (dark theme)](docs/screenshot.png)
 
@@ -50,8 +50,8 @@ It runs against **MySQL** when one is configured, and falls back to an **embedde
 | Data access | Plain JDBC: `PreparedStatement` for every query, no ORM |
 | Database | MySQL 8 (Connector/J), with H2 2.x in MySQL mode as the embedded fallback |
 | SQL | Normalized schema: foreign keys, `UNIQUE` and `CHECK` constraints, indexes |
-| Build | Maven (wrapper included). The Shade plugin builds a single runnable jar |
-| Tests | JUnit 5 (73 tests) against in-memory H2 using the real schema and seed scripts |
+| Build | Maven (wrapper included). The Shade plugin builds a single runnable jar; `jpackage` + `jlink` produce the self-contained Windows build |
+| Tests | JUnit 5 (92 tests) against in-memory H2 using the real schema and seed scripts, including in-process Swing UI tests |
 
 ## Architecture
 
@@ -152,6 +152,16 @@ erDiagram
 
 ## Getting started
 
+### Run on Windows (no Java required)
+
+1. Download **`StudentManagementSystem-windows-x64.zip`** from the [latest release](https://github.com/PeterUngab34/student-management-system/releases/latest).
+2. Extract the zip anywhere (right-click → *Extract All…*).
+3. Open the extracted `Student Management System` folder and run **`Student Management System.exe`**.
+
+The zip contains its own trimmed Java runtime, so nothing needs to be installed. Because the build isn't code-signed, Windows SmartScreen may show *"Windows protected your PC"* the first time: click **More info → Run anyway**. The app starts on the embedded database with sample data and keeps its data in `%USERPROFILE%\.student-management-system`.
+
+Everything below is for macOS/Linux, for running the `.jar` with your own Java, or for building from source.
+
 **Requirements:** JDK 17 or newer. Maven isn't required because the Maven wrapper (`mvnw`) is included.
 
 ### 1. Build
@@ -203,9 +213,21 @@ java -jar target/student-management-system.jar --smoke-test   # non-interactive 
 java -cp target/student-management-system.jar com.peterungab.sms.tools.ScreenshotTool docs   # regenerate the screenshots
 ```
 
+### Building the Windows package
+
+`scripts\package-windows.cmd` produces the no-Java-required build that is attached to releases. It needs a JDK 17+ that ships `jpackage` (`JAVA_HOME` or on `PATH`) and does the following:
+
+1. `mvnw.cmd clean package -DskipTests` builds the fat jar.
+2. `IconTool` renders the app mark into a multi-resolution `.ico` (16–256 px, each size drawn from the vector artwork).
+3. `jdeps --print-module-deps` works out which JDK modules the jar needs; `java.desktop`, `java.sql`, `java.naming`, `java.logging`, `java.management` and `jdk.unsupported` are added because H2, FlatLaf and the JDBC drivers reach them reflectively.
+4. `jpackage --type app-image` bundles the jar with a `jlink`ed runtime of just those modules into `target\dist\Student Management System\`.
+5. The folder is zipped to `target\StudentManagementSystem-windows-x64.zip`.
+
+`"target\dist\Student Management System\Student Management System.exe" --smoke-test` runs the same self-check as the jar and exits 0 when every page and dialog renders. The app image is not code-signed, hence the SmartScreen prompt on first launch.
+
 ## Tests
 
-`./mvnw test` runs **73 JUnit 5 tests** against in-memory H2 databases in MySQL mode, built from the real `schema.sql` and `seed.sql`:
+`./mvnw test` runs **92 JUnit 5 tests** against in-memory H2 databases in MySQL mode, built from the real `schema.sql` and `seed.sql`:
 
 - **Schema:** seed counts, `CHECK`/`UNIQUE`/foreign-key constraints, cascade on delete, and idempotent initialization.
 - **DAOs:** insert/update/delete round trips, lookups by natural key, combined filters with sorting, aggregates, and the enrollment lifecycle.
@@ -213,6 +235,8 @@ java -cp target/student-management-system.jar com.peterungab.sms.tools.Screensho
 - **CourseService:** code normalization (`cpe301` → `CPE 301`), validation, and refusing to delete a course that has enrollments.
 - **EnrollmentService:** duplicate enrollment rejection, retakes in a later term, only active students can enroll, grade-scale validation, drop rules, and unit-weighted GPA and per-term GPA checked against hand-computed values.
 - **GradeCalculator, CsvWriter, DatabaseConfig:** GPA rounding, CSV escaping and BOM, config precedence, and the MySQL → H2 fallback when the server is unreachable.
+- **UI (in-process Swing):** the real `MainFrame` and dialogs against a seeded database, driven through the components' own listeners rather than OS input. Adding a student through the dialog (row appears, database row normalized), per-field validation messages, editing via double-click, deleting via the Delete key with the confirmation answered by a test seam, live search with its debounce, program/year/status filters, sorting by clicking a column header, CSV export through a stand-in file chooser (BOM, header, row order, "replace file?" prompt), enrolling from the academic record, recording a grade and seeing the GPA change, drop/remove, the sidebar/menu/shortcut navigation, window geometry and icon, and the live theme toggle with its persisted preference. Modal prompts go through `ui.Prompts`, whose handler the tests replace, so no dialog ever blocks. These tests need a display and are skipped on headless CI runners.
+- **IconTool:** the generated `.ico` has one natively rendered, transparent PNG entry per size.
 
 ## Author
 

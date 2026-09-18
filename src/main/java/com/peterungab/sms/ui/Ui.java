@@ -202,18 +202,15 @@ public final class Ui {
     }
 
     public static boolean confirm(Component parent, String title, String message, String confirmText) {
-        Object[] options = {confirmText, "Cancel"};
-        int choice = JOptionPane.showOptionDialog(parent, message, title, JOptionPane.DEFAULT_OPTION,
-                JOptionPane.WARNING_MESSAGE, null, options, options[1]);
-        return choice == 0;
+        return Prompts.confirm(parent, title, message, confirmText);
     }
 
     public static void showError(Component parent, String title, String message) {
-        JOptionPane.showMessageDialog(parent, message, title, JOptionPane.ERROR_MESSAGE);
+        Prompts.showMessage(parent, title, message, JOptionPane.ERROR_MESSAGE);
     }
 
     public static void showInfo(Component parent, String title, String message) {
-        JOptionPane.showMessageDialog(parent, message, title, JOptionPane.INFORMATION_MESSAGE);
+        Prompts.showMessage(parent, title, message, JOptionPane.INFORMATION_MESSAGE);
     }
 
     public static String hex(Color c) {

@@ -85,7 +85,7 @@ public final class MainFrame extends JFrame {
     }
 
     public void openStudentRecord(int studentId) {
-        new StudentRecordDialog(this, ctx, studentId).setVisible(true);
+        Prompts.showModal(new StudentRecordDialog(this, ctx, studentId));
     }
 
     public void toggleTheme() {

@@ -32,6 +32,7 @@ public abstract class FormDialog<T> extends JDialog {
     protected final JPanel form = new JPanel(new MigLayout("insets 0, fillx, wrap 2, gap 18 0",
             "[grow,fill,sg col][grow,fill,sg col]", ""));
     private final Map<String, JLabel> errorLabels = new LinkedHashMap<>();
+    private final Map<String, JComponent> fields = new LinkedHashMap<>();
     private final JLabel generalError = Ui.errorLabel();
     private final JButton saveButton;
     private int minWidth;
@@ -75,6 +76,7 @@ public abstract class FormDialog<T> extends JDialog {
         caption.setLabelFor(field);
         JLabel error = Ui.errorLabel();
         errorLabels.put(key, error);
+        fields.put(key, field);
         cell.add(caption, "wrap");
         cell.add(field, "h 34!, wrap");
         cell.add(error);
@@ -130,6 +132,33 @@ public abstract class FormDialog<T> extends JDialog {
     /** The saved object, or empty if the dialog was cancelled. */
     public Optional<T> result() {
         return Optional.ofNullable(result);
+    }
+
+    // ---- programmatic access (used by the UI tests) -----------------------------------------
+
+    /** The input component registered under {@code key} in {@link #addField}. */
+    public JComponent field(String key) {
+        JComponent field = fields.get(key);
+        if (field == null) {
+            throw new IllegalArgumentException("No field '" + key + "'; known fields: " + fields.keySet());
+        }
+        return field;
+    }
+
+    /** The validation message currently shown under a field, or an empty string. */
+    public String errorMessage(String key) {
+        JLabel label = errorLabels.get(key);
+        return label == null ? "" : label.getText().trim();
+    }
+
+    /** The message shown above the buttons for errors that belong to no single field, or "". */
+    public String generalErrorMessage() {
+        return generalError.getText().trim();
+    }
+
+    /** Same as pressing the Save button (or Enter). */
+    public void submit() {
+        saveButton.doClick();
     }
 
     protected void finishLayout(int width) {

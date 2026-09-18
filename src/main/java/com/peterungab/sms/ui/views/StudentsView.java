@@ -9,6 +9,7 @@ import com.peterungab.sms.model.StudentStatus;
 import com.peterungab.sms.service.BusinessRuleException;
 import com.peterungab.sms.ui.Icons;
 import com.peterungab.sms.ui.MainFrame;
+import com.peterungab.sms.ui.Prompts;
 import com.peterungab.sms.ui.Ui;
 import com.peterungab.sms.ui.View;
 import com.peterungab.sms.ui.components.Card;
@@ -307,7 +308,7 @@ public final class StudentsView extends JPanel implements View {
     @Override
     public void createNew() {
         StudentDialog dialog = new StudentDialog(frame, ctx, null);
-        dialog.setVisible(true);
+        Prompts.showModal(dialog);
         dialog.result().ifPresent(saved -> {
             reload();
             selectById(saved.id());
@@ -318,7 +319,7 @@ public final class StudentsView extends JPanel implements View {
     private void editSelected() {
         selectedStudent().ifPresent(student -> {
             StudentDialog dialog = new StudentDialog(frame, ctx, student);
-            dialog.setVisible(true);
+            Prompts.showModal(dialog);
             dialog.result().ifPresent(saved -> {
                 reload();
                 selectById(saved.id());

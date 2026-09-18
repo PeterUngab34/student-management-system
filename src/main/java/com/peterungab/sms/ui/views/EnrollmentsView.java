@@ -10,6 +10,7 @@ import com.peterungab.sms.model.Semester;
 import com.peterungab.sms.service.BusinessRuleException;
 import com.peterungab.sms.ui.Icons;
 import com.peterungab.sms.ui.MainFrame;
+import com.peterungab.sms.ui.Prompts;
 import com.peterungab.sms.ui.Theme;
 import com.peterungab.sms.ui.Ui;
 import com.peterungab.sms.ui.View;
@@ -283,7 +284,7 @@ public final class EnrollmentsView extends JPanel implements View {
     @Override
     public void createNew() {
         EnrollDialog dialog = new EnrollDialog(frame, ctx);
-        dialog.setVisible(true);
+        Prompts.showModal(dialog);
         dialog.result().ifPresent(saved -> {
             populateFilterChoices();
             reload();
@@ -299,7 +300,7 @@ public final class EnrollmentsView extends JPanel implements View {
                 return;
             }
             GradeDialog dialog = new GradeDialog(frame, ctx, enrollment);
-            dialog.setVisible(true);
+            Prompts.showModal(dialog);
             dialog.result().ifPresent(saved -> {
                 reload();
                 selectById(saved.id());
