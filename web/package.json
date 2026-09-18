@@ -1,0 +1,17 @@
+{
+  "name": "student-management-system-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Web edition of the Student Management System: the project's SQL schema running in the browser on SQLite (sql.js).",
+  "type": "module",
+  "scripts": {
+    "test": "node --test \"tests/*.test.mjs\"",
+    "sync-seed": "node scripts/sync-seed.mjs",
+    "check-seed": "node scripts/sync-seed.mjs --check",
+    "e2e": "node tests/e2e/run.mjs",
+    "start": "npx --yes serve ."
+  },
+  "devDependencies": {
+    "sql.js": "1.14.2"
+  }
+}
